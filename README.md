@@ -1,4 +1,4 @@
-# Thoriumc
+## project04-urlShortnerGroup78
 
 ## Scalable URL Shortner Project Requirement
 
@@ -34,9 +34,9 @@ If you haven’t used tinyurl.com before, please try creating a new shortened UR
 - Url Model
 ```
 { urlCode: { mandatory, unique, lowercase, trim }, longUrl: {mandatory, valid url}, shortUrl: {mandatory, unique} }
-```
+``` 
 
-### POST /url/shorten
+### POST /url/shorten 
 - Create a short URL for an original url recieved in the request body.
 - The baseUrl must be the application's baseUrl. Example if the originalUrl is http://abc.com/user/images/name/2 then the shortened url should be http://localhost:3000/xyz
 - Return the shortened unique url. Refer [this](#url-shorten-response) for the response
