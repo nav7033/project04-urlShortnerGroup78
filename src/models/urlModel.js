@@ -29,6 +29,7 @@ const urlSchema = new mongoose.Schema({
         type:String,
         required:[true,"required shortUrl"],
         unique:true,
+        lowercase:true,
         trim:true
     }
 },{timestamps:true})
