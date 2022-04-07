@@ -3,7 +3,7 @@ const validUrl = require('valid-url')
 const shortid = require('shortid')
 const redis = require('redis')
 const { promisify } = require('util')
-const { redirect } = require("express/lib/response")
+//const { redirect } = require("express/lib/response")
 
 
 
@@ -45,6 +45,9 @@ const urlCreate = async function (req, res) {
         if (objectKey.length === 0) {
             return res.status(400).send({ status: false, msg: "enter the longUrl in the body " })
         }
+        if(!(objectKey.length==1 && objectKey == 'longUrl')){
+            return res.status(400).send({ status: false, msg: "only longUrl allowed !" }) 
+        }
 
         if (!isValid(data.longUrl)) {
             return res.status(400).send({ status: false, msg: "longUrl is required" })
@@ -55,7 +58,7 @@ const urlCreate = async function (req, res) {
         //check longUrl already Present or not 
         let document = await GET_ASYNC(`${req.body.longUrl}`)
         if (document) {
-            return res.status(200).send(JSON.parse(document))
+            return res.status(200).send({status:true,msg:"redis data", data:JSON.parse(document)})
         }
         else {
             let findDoc = await urlModel.findOne({ longUrl: data.longUrl.trim() }).select({ _id: 0, longUrl: 1, shortUrl: 1, urlCode: 1 })
@@ -104,25 +107,28 @@ const redirectToOriginalUrl = async function (req, res) {
         if (!isValid(urlCode)) {
             return res.status(400).send({ status: false, msg: "urlCode is required" })
         }
-        if (!shortid.isValid(urlCode)) {
+        //validate urlCode valid or not
+        if (Object.keys(urlCode).length !=9) {
             return res.status(400).send({ status: false, msg: "urlCode is invalid" })
         }
+        //access data into cache 
         let cahcedUrl = await GET_ASYNC(`${req.params.urlCode}`)
+        console.log(cahcedUrl)
         let doc = JSON.parse(cahcedUrl)
         if (doc) {
             console.log(doc)
             return res.redirect(doc.longUrl)
         }
+        // find longUrl and redirect it .
         else {
 
             let findUrl = await urlModel.findOne({ urlCode: req.params.urlCode }).select({ _id: 0, urlCode: 1, shortUrl: 1, longUrl: 1 })
             if (!findUrl) {
                 return res.status(404).send({ status: false, msg: "Url is not present in db" })
             }
-            let x = await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findUrl))
-            let y = await SET_ASYNC(`${findUrl.longUrl}`, JSON.stringify(findUrl))
-            console.log(x)
-            console.log(y)
+            await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findUrl))
+            //await SET_ASYNC(`${findUrl.longUrl}`, JSON.stringify(findUrl))
+
             return res.redirect(findUrl.longUrl)
 
 
